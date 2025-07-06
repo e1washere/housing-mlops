@@ -1,0 +1,64 @@
+{
+  "appName": "KlimaRatownik",
+  "description": "Full-stack web app exploiting July 2025 Polish market opportunities during heatwave crisis",
+  "appStructure": [
+    "app/page.tsx - Main homepage with feature selection",
+    "app/components/cooling/CoolingMap.tsx - Real-time cooling products map",
+    "app/components/subsidy/SubsidyForm.tsx - EU subsidy form wizard",
+    "app/components/chatbot/ChatbotWidget.tsx - Multilingual rental chatbot",
+    "app/components/ui/Hero.tsx - Landing page hero section",
+    "app/components/ui/FeatureCard.tsx - Feature selection cards",
+    "app/lib/scraper.ts - Web scraping engine for Allegro/Amazon/MediaExpert",
+    "app/lib/subsidyEngine.ts - TPD/2025 form generator with PDF export",
+    "app/lib/paymentHandler.ts - Stripe integration for PLN payments",
+    "app/lib/chatbot.ts - AI chatbot logic with language detection",
+    "app/lib/telegram.ts - Telegram bot for notifications",
+    "app/api/scrape/products/route.ts - API for product scraping",
+    "app/api/subsidy/generate/route.ts - API for subsidy report generation",
+    "app/api/chatbot/process/route.ts - API for chat processing"
+  ],
+  "codeSnippets": {
+    "scraper.js": "// Allegro Scraper\nexport async function scrapeAllegro(searchTerm: string): Promise<CoolingProduct[]> {\n  const url = `https://allegro.pl/listing?string=${encodeURIComponent(searchTerm)}`;\n  const { data } = await axios.get(url, { headers: { 'User-Agent': USER_AGENT } });\n  const $ = cheerio.load(data);\n  \n  $('._9c44d_2H7Kt').each((i, elem) => {\n    const name = $(elem).find('h2').text().trim();\n    const priceText = $(elem).find('[aria-label*=\"cena\"]').text();\n    const price = parseFloat(priceText.replace(/[^\\d,]/g, '').replace(',', '.'));\n    // ... extract product data\n  });\n}",
+    
+    "subsidyEngine.js": "export async function generateTPD2025Form(farmerData: FarmerData): Promise<Uint8Array> {\n  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });\n  \n  // Generate EU subsidy form\n  doc.text('WNIOSEK O WSPARCIE Z TYTUŁU STRAT SPOWODOWANYCH SUSZĄ', 105, 20, { align: 'center' });\n  \n  // Add farmer data\n  doc.text(`Powierzchnia dotknięta: ${farmerData.farmDetails.affectedArea} ha`, 20, 50);\n  doc.text(`GPS: ${farmerData.farmDetails.gpsCoordinates.lat}, ${farmerData.farmDetails.gpsCoordinates.lng}`, 20, 60);\n  \n  // Calculate subsidy (70% of losses, max 850 PLN/ha)\n  const subsidy = Math.min(farmerData.farmDetails.estimatedLoss * 0.7, farmerData.farmDetails.affectedArea * 850 * 1.5);\n  \n  return doc.output('arraybuffer') as Uint8Array;\n}",
+    
+    "paymentHandler.js": "// Stripe PLN payments\nexport const PRICING = {\n  COOLING_ALERTS: { monthly: 49, description: 'Alerty o dostępności sprzętu chłodzącego' },\n  SUBSIDY_REPORT: { oneTime: 199, description: 'Automatyczne generowanie raportu TPD/2025' },\n  RENTAL_CHATBOT: { commission: 0.10, description: 'Prowizja od rezerwacji' }\n};\n\nexport async function createSubscriptionPayment(user: User, type: string): Promise<Stripe.PaymentIntent> {\n  return await stripe.paymentIntents.create({\n    amount: PRICING.COOLING_ALERTS.monthly * 100, // Convert to grosz\n    currency: 'pln',\n    metadata: { userId: user.id, subscriptionType: type }\n  });\n}"
+  },
+  "launchPlan": [
+    "1. Deploy MVP on Vercel TODAY - npm run build && vercel deploy",
+    "2. Target FB groups: 'Rolnik Nowoczesny' (87k farmers) - Post about free TPD/2025 form generator",
+    "3. Google Ads: 'klimatyzacja natychmiastowa dostawa' - 500 PLN/day budget",
+    "4. Partner with local cooling equipment stores for affiliate commissions",
+    "5. Contact Baltic coast Airbnb hosts via targeted LinkedIn campaign",
+    "6. Create YouTube tutorial: 'Jak otrzymać dopłatę za suszę 2025'",
+    "7. Press release to Gazeta Wyborcza about heatwave tech solutions"
+  ],
+  "monetization": {
+    "projectedRevenue": {
+      "month1": {
+        "coolingAlerts": "500 users × 49 PLN = 24,500 PLN",
+        "subsidyReports": "200 farmers × 199 PLN = 39,800 PLN",
+        "rentalCommissions": "1000 bookings × 300 PLN avg × 10% = 30,000 PLN",
+        "total": "94,300 PLN"
+      }
+    },
+    "costs": {
+      "vercelHosting": "100 PLN/month",
+      "stripeFeee": "2.9% + 1.20 PLN per transaction",
+      "marketingBudget": "15,000 PLN/month"
+    }
+  },
+  "techStack": {
+    "frontend": ["Next.js 14", "React", "TypeScript", "Tailwind CSS"],
+    "backend": ["Node.js", "Cheerio", "jsPDF", "Stripe API"],
+    "notifications": ["Telegram Bot API", "react-hot-toast"],
+    "deployment": ["Vercel", "PostgreSQL (Supabase)"]
+  },
+  "uniqueFeatures": [
+    "Real-time scraping of Polish/German e-commerce sites",
+    "Auto-fill EU forms using GPS coordinates",
+    "Trilingual chatbot with Polish market focus",
+    "Telegram alerts for price drops during heatwave",
+    "Commission-only model for rental hosts"
+  ]
+}
